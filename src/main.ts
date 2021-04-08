@@ -173,7 +173,12 @@ system.addEventListener('passenger-taken', ({ passenger, elevator }: ElevatorAnd
 system.addEventListener('passenger-dropped', ({ passenger, elevator }: ElevatorAndPassenger) => {
     document.querySelector(`#elevator-id-${elevator.id} #passenger_${passenger.id}`).remove()
 })
-
+// system.addNewElevator()
+// system.addNewPassenger({
+//     name: 'Jakub',
+//     initialFloor: 0,
+//     destinationFloor: 1,
+// })
 // system.addNewElevator();
 // system.addNewElevator();
 

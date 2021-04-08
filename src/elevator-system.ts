@@ -149,10 +149,20 @@ export default class ElevatorSystem extends EventProducer<EventType> {
                         }
                     }
                     if (!isAny) {
-                        console.log('nope')
-
                         // if there are none, then make this elevator go for that person
                         elevator.direction = Math.sign(passenger.initialFloor - elevator.currentFloor)
+                        if (elevator.direction === 0) {
+                            // in case the passenger is one the same floor as the elevator, take it
+                            elevator.direction = Math.sign(passenger.destinationFloor - passenger.initialFloor)
+                            for (let i = this.waitingPassengers.length - 1; i >= 0; i--) {
+                                const passenger = this.waitingPassengers[i]
+                                if (passenger.initialFloor === elevator.currentFloor && passenger.direction === elevator.direction) {
+                                    elevator.passengers.push(passenger)
+                                    this.waitingPassengers.splice(i, 1)
+                                    this.emit('passenger-taken', { passenger, elevator })
+                                }
+                            }
+                        }
                         elevator.nextDirection = Math.sign(passenger.destinationFloor - passenger.initialFloor)
                         if (elevator.nextDirection === elevator.direction) {
                             elevator.nextDirection = ElevatorDirection.Standing
