@@ -60,14 +60,8 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     }
 
     public commitNextStep() {
-        // for (const elevator of this.elevators.values()) {
-
-        //         this.emit('elevator-updated', elevator)
-        //     }
-
 
         const changedElevatorIds = new Set<number>()
-        for (const elevator of this.elevators.keys()) changedElevatorIds.add(elevator)
 
 
 
@@ -157,8 +151,6 @@ export default class ElevatorSystem extends EventProducer<EventType> {
                         }
                     }
                     if (!isAny) {
-                        console.log(elevator.id, passenger.name);
-
                         // if there are none, then make this elevator go for that person
                         elevator.direction = Math.sign(passenger.initialFloor - elevator.currentFloor)
                         elevator.nextDirection = Math.sign(passenger.destinationFloor - passenger.initialFloor)
