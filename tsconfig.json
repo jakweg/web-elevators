@@ -2,7 +2,12 @@
     "compileOnSave": true,
     "compilerOptions": {
         "module": "commonjs",
-        "lib": ["es5", "es6", "dom"],
-        "rootDir": "src"
+        "lib": [
+            "es5",
+            "es6",
+            "dom"
+        ],
+        "rootDir": "src",
+        "downlevelIteration": true
     }
 }
