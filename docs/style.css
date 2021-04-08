@@ -1,53 +1,82 @@
-    body {
-        margin: 0;
-        text-align: center;
-        background-color: #1e1e1e;
-        color: #e1e1e1;
-    }
-    
-    h1 {
-        margin: 0;
-    }
-    
-    header {
-        padding: 8px;
-        background-color: #2e2e2e;
-    }
-    
-    main {
-        padding: 8px;
-    }
-    
-    noscript {
-        height: 80vh;
-        display: grid;
-        place-items: center;
-    }
-    
-    #elevators-list,
-    #waiting-passengers-list {
-        display: flex;
-        flex-flow: row nowrap;
-        overflow: hidden;
-    }
-    
-    .elevator,
-    .waiting-passenger {
-        min-height: 160px;
-        width: 360px;
-        padding: 4px;
-        margin: 4px;
-        border-radius: 4px;
-        border: 1px solid gray;
-    }
-    
-    .elevator>*:nth-child(2n),
-    .waiting-passenger>*:nth-child(2n) {
-        margin-bottom: 4px;
-        opacity: .7;
-    }
-    
-    .elevator>*:nth-child(2n + 1),
-    .waiting-passenger>*:nth-child(2n + 1) {
-        font-size: 2em;
-    }
+body {
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #e1e1e1;
+}
+
+h1 {
+  margin: 0;
+}
+
+header {
+  text-align: center;
+  padding: 8px;
+  background-color: #2e2e2e;
+}
+nav {
+  padding-bottom: 8px;
+  text-align: center;
+  border-bottom: 1px solid gray;
+}
+
+main {
+  padding: 8px;
+}
+
+noscript {
+  height: 80vh;
+  display: grid;
+  place-items: center;
+}
+
+#elevators-list,
+#waiting-passengers-list {
+  display: flex;
+  flex-flow: row nowrap;
+  overflow: hidden;
+}
+
+.elevator,
+.waiting-passenger {
+  text-align: center;
+  min-height: 160px;
+  min-width: 160px;
+  padding: 4px;
+  margin: 4px;
+  border-radius: 4px;
+  border: 1px solid gray;
+}
+
+.elevator > *:nth-child(2n),
+.waiting-passenger > *:nth-child(2n) {
+  margin-bottom: 4px;
+  font-size: 0.9em;
+  opacity: 0.7;
+}
+
+.elevator > *:nth-child(2n + 1),
+.waiting-passenger > *:nth-child(2n + 1) {
+  font-size: 2em;
+}
+
+.elevator .passengers-inside-list {
+  font-size: 0.9em;
+}
+
+input[type="button"] {
+  background: #512da8;
+  color: #e1e1e1;
+  padding: 8px;
+  font-weight: bold;
+  margin: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  font-size: 1.1em;
+  transition: background-color 0.2s;
+}
+
+input[type="button"]:hover {
+  background: #46209e;
+}

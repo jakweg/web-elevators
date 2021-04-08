@@ -1,35 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Elevator system simulator</title>
-    <meta name="author" value="Jakub Węgrzyn">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" value="Jakub Węgrzyn" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="bundle.js" defer></script>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
     <header>
-        <h1>Elevator simulator</h1>
+      <h1>Elevator simulator</h1>
     </header>
     <noscript>
-        <h2>Please enable JavaScript in your browser</h2>
+      <h2>Please enable JavaScript in your browser</h2>
     </noscript>
-    <main style="display: none;">
-        <input type="button" value="Add elevator" id="add-elevator-btn">
-        <input type="button" value="Add passenger" id="add-passenger-btn">
-        <input type="button" value="Next simulation step" id="next-step-btn">
-        <hr>
-        <h4>Elevators:</h4>
-        <div id="elevators-list">
-        </div>
-        <h4>Passengers:</h4>
-        <div id="waiting-passengers-list">
-        </div>
+    <main style="display: none">
+      <nav>
+        <input type="button" value="Add elevator" id="add-elevator-btn" />
+        <input type="button" value="Add passenger" id="add-passenger-btn" />
+        <input type="button" value="Next simulation step" id="next-step-btn" />
+      </nav>
+      <h4>Elevators:</h4>
+      <div id="elevators-list"></div>
+      <h4>Passengers:</h4>
+      <div id="waiting-passengers-list"></div>
     </main>
-</body>
-
+  </body>
 </html>
