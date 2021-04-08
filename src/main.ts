@@ -166,7 +166,7 @@ system.addEventListener('passenger-taken', ({ passenger, elevator }: ElevatorAnd
     const el = document.createElement('div')
     el.id = `passenger_${passenger.id}`
     el.classList.add('passenger-inside')
-    el.innerText = `${passenger.name}`
+    el.innerText = `${passenger.name} (${passenger.destinationFloor})`
     listOfInsiders.appendChild(el)
 })
 
