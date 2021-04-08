@@ -31,6 +31,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     private elevators = new Map<number, Elevator>()
 
     private waitingPassengers: Passenger[] = []
+    private waitingPassengersAboutToBeTaken: Passenger[] = []
 
     public addNewElevator() {
         const id = generateUniqueId()
@@ -46,11 +47,65 @@ export default class ElevatorSystem extends EventProducer<EventType> {
             id: generateUniqueId(),
             name, initialFloor, destinationFloor
         }
-        this.waitingPassengers.push(passenger)
+        this.waitingPassengers.unshift(passenger)
         this.emit('waiting-passenger-added', passenger)
     }
 
     public commitNextStep() {
+        // assign elevators to passengers if someone is waiting
+        for (let i = this.waitingPassengers.length - 1; i >= 0; i--) {
+            const passenger = this.waitingPassengers[i]
+            // find any elevator that is moving this direction
+            let foundOne = false
+            for (const elevator of this.elevators.values()) {
+                // check if is moving
+                if (elevator.currentFloor !== elevator.destinationFloor) {
+                    // check if (going down and we the passenger is below this elevator and the passenger wants to go down) OR exacly the opposite
+                    if ((elevator.destinationFloor < elevator.currentFloor
+                        && passenger.initialFloor <= elevator.currentFloor
+                        && passenger.destinationFloor < passenger.initialFloor)
+
+                        || (elevator.destinationFloor > elevator.currentFloor
+                            && passenger.initialFloor >= elevator.currentFloor
+                            && passenger.destinationFloor > passenger.initialFloor)) {
+                        // elevator going to this passenger found!
+                        this.waitingPassengersAboutToBeTaken.push(passenger)
+                        this.waitingPassengers.splice(i, 1)
+
+                        // change elevator's destination floor, because it may by farer away then it's current one
+                        if (Math.abs(elevator.destinationFloor - elevator.currentFloor) < Math.abs(passenger.destinationFloor - elevator.currentFloor)) {
+                            elevator.destinationFloor = passenger.destinationFloor
+
+                        }
+
+                        // FIXME: it's possible that single elevator gets updated multiple times, but there should be a single event!
+                        this.emit('elevator-updated', elevator)
+                        foundOne = true
+                        break
+                    }
+                }
+            }
+
+            if (!foundOne) {
+                // there is no elevator that is going in our direction, use one that is free
+                for (const elevator of this.elevators.values()) {
+                    // check if is free
+                    if (elevator.currentFloor === elevator.destinationFloor) {
+
+                        this.waitingPassengersAboutToBeTaken.push(passenger)
+                        this.waitingPassengers.splice(i, 1)
+
+                        elevator.destinationFloor = passenger.initialFloor
+                        // FIXME: it's possible that single elevator gets updated multiple times, but there should be a single event!
+                        this.emit('elevator-updated', elevator)
+
+                        break;
+                    }
+                }
+            }
+        }
+
+
         // moving elevators
         for (const elevator of this.elevators.values()) {
             let wasChanged = false
@@ -77,11 +132,11 @@ export default class ElevatorSystem extends EventProducer<EventType> {
 
             // take passengers that want to go up and are on this floor
             // drop passengers that wants to be on this floor
-            for (let i = this.waitingPassengers.length - 1; i >= 0; i--) {
-                const passenger = this.waitingPassengers[i]
+            for (let i = this.waitingPassengersAboutToBeTaken.length - 1; i >= 0; i--) {
+                const passenger = this.waitingPassengersAboutToBeTaken[i]
                 if (passenger.initialFloor === elevator.currentFloor) {
                     elevator.passengers.push(passenger)
-                    this.waitingPassengers.splice(i, 1)
+                    this.waitingPassengersAboutToBeTaken.splice(i, 1)
                     this.emit('passenger-taken', { passenger, elevator })
                 }
             }
@@ -95,13 +150,16 @@ export default class ElevatorSystem extends EventProducer<EventType> {
                     elevator.destinationFloor = elevator.passengers[0].destinationFloor
                     wasChanged = true
                 } else {
-                    // looks like the elevator is empty, find any waiting passenger to go for //  meaby optimize it?
-                    const floor = this.waitingPassengers[0]?.initialFloor
-                    if (floor !== undefined) {
-                        // there is at least one waiting passenger, go for it
-                        elevator.destinationFloor = floor
-                        wasChanged = true
-                    }
+                    // COMMENTED, because experimenting with different approach
+                    // FIXME: remove this
+
+                    // // looks like the elevator is empty, find any waiting passenger to go for //  meaby optimize it?
+                    // const floor = this.waitingPassengersAboutToBeTaken[0]?.initialFloor
+                    // if (floor !== undefined) {
+                    //     // there is at least one waiting passenger, go for it
+                    //     elevator.destinationFloor = floor
+                    //     wasChanged = true
+                    // }
                 }
             }
 
@@ -109,6 +167,8 @@ export default class ElevatorSystem extends EventProducer<EventType> {
                 this.emit('elevator-updated', elevator)
             }
         }
+
+
 
     }
 }
