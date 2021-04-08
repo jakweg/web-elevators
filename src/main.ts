@@ -1,3 +1,2 @@
-import {who} from './second'
-
-console.log(`Hello ${who}`)
+// show main box when JS is enabled
+document.querySelector('main').style.display = null;

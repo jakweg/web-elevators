@@ -17,3 +17,9 @@
     main {
         padding: 8px;
     }
+    
+    noscript {
+        height: 80vh;
+        display: grid;
+        place-items: center;
+    }

@@ -1,2 +1,2 @@
 ## Simple elevator system
-### Notihing too sophisticated
+### Nothing too sophisticated
