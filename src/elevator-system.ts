@@ -1,4 +1,5 @@
 import EventProducer from "./event-producer"
+import { generateUniqueId } from "./util"
 
 export type EventType = 'elevator-added' | 'waiting-passenger-added' | 'passenger-taken' | 'passenger-dropped' | 'elevator-updated'
 
@@ -32,9 +33,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     private waitingPassengers: Passenger[] = []
 
     public addNewElevator() {
-        const id = Math.random() * 1_000_000 | 0
-        if (this.elevators.has(id))
-            return this.addNewElevator();
+        const id = generateUniqueId()
         const obj = new Elevator(id)
         this.elevators.set(id, obj)
         this.emit('elevator-added', obj)
@@ -44,7 +43,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
         if (isNaN(initialFloor) || isNaN(destinationFloor)) throw new Error('Invalid passengers parameters')
 
         const passenger = <Passenger>{
-            id: Math.random() * 1_000_000 | 0,
+            id: generateUniqueId(),
             name, initialFloor, destinationFloor
         }
         this.waitingPassengers.push(passenger)
