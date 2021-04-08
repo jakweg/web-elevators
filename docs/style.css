@@ -1,0 +1,19 @@
+    body {
+        margin: 0;
+        text-align: center;
+        background-color: #1e1e1e;
+        color: #e1e1e1;
+    }
+    
+    h1 {
+        margin: 0;
+    }
+    
+    header {
+        padding: 8px;
+        background-color: #2e2e2e;
+    }
+    
+    main {
+        padding: 8px;
+    }
