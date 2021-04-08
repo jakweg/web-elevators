@@ -34,7 +34,7 @@
     .elevator,
     .waiting-passenger {
         min-height: 160px;
-        width: 160px;
+        width: 360px;
         padding: 4px;
         margin: 4px;
         border-radius: 4px;

@@ -8,22 +8,28 @@ export interface ElevatorAndPassenger {
     passenger: Passenger
 }
 
+export enum ElevatorDirection {
+    Standing = 0,
+    GoingUp = 1,
+    GoingDown = -1
+}
+
 export class Elevator {
     public constructor(public readonly id: number,) { }
     public currentFloor: number = 0
-    public destinationFloor: number = 0
+    public direction: ElevatorDirection = ElevatorDirection.Standing
+    public nextDirection: ElevatorDirection = ElevatorDirection.Standing
+    public destinationLimit: number = Number.MAX_SAFE_INTEGER
     public passengers: Passenger[] = []
 }
 
 export interface Passenger {
-    // public constructor(
-    //     public readonly name: string,
-    //     public readonly initialFloor: number ,
-    //     public readonly destinationFloor: number ) { }
     readonly id?: number
     readonly name: string
     readonly initialFloor: number
     readonly destinationFloor: number
+    readonly direction?: ElevatorDirection
+    readonly assignedElevatorId?: number
 }
 
 export default class ElevatorSystem extends EventProducer<EventType> {
@@ -31,20 +37,22 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     private elevators = new Map<number, Elevator>()
 
     private waitingPassengers: Passenger[] = []
-    private waitingPassengersAboutToBeTaken: Passenger[] = []
 
-    public addNewElevator() {
+    public addNewElevator(initialFloor?: number) {
         const id = generateUniqueId()
         const obj = new Elevator(id)
+        obj.currentFloor = +initialFloor || 0
         this.elevators.set(id, obj)
         this.emit('elevator-added', obj)
     }
 
     public addNewPassenger({ name, initialFloor, destinationFloor }: Passenger) {
         if (isNaN(initialFloor) || isNaN(destinationFloor)) throw new Error('Invalid passengers parameters')
+        if (initialFloor === destinationFloor) throw new Error('Passenger is already on the destination floor')
 
         const passenger = <Passenger>{
             id: generateUniqueId(),
+            direction: destinationFloor < initialFloor ? ElevatorDirection.GoingDown : ElevatorDirection.GoingUp,
             name, initialFloor, destinationFloor
         }
         this.waitingPassengers.unshift(passenger)
@@ -52,123 +60,128 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     }
 
     public commitNextStep() {
-        // assign elevators to passengers if someone is waiting
-        for (let i = this.waitingPassengers.length - 1; i >= 0; i--) {
-            const passenger = this.waitingPassengers[i]
-            // find any elevator that is moving this direction
-            let foundOne = false
-            for (const elevator of this.elevators.values()) {
-                // check if is moving
-                if (elevator.currentFloor !== elevator.destinationFloor) {
-                    // check if (going down and we the passenger is below this elevator and the passenger wants to go down) OR exacly the opposite
-                    if ((elevator.destinationFloor < elevator.currentFloor
-                        && passenger.initialFloor <= elevator.currentFloor
-                        && passenger.destinationFloor < passenger.initialFloor)
+        // for (const elevator of this.elevators.values()) {
 
-                        || (elevator.destinationFloor > elevator.currentFloor
-                            && passenger.initialFloor >= elevator.currentFloor
-                            && passenger.destinationFloor > passenger.initialFloor)) {
-                        // elevator going to this passenger found!
-                        this.waitingPassengersAboutToBeTaken.push(passenger)
-                        this.waitingPassengers.splice(i, 1)
+        //         this.emit('elevator-updated', elevator)
+        //     }
 
-                        // change elevator's destination floor, because it may by farer away then it's current one
-                        if (Math.abs(elevator.destinationFloor - elevator.currentFloor) < Math.abs(passenger.destinationFloor - elevator.currentFloor)) {
-                            elevator.destinationFloor = passenger.destinationFloor
 
+        const changedElevatorIds = new Set<number>()
+        for (const elevator of this.elevators.keys()) changedElevatorIds.add(elevator)
+
+
+
+        for (const elevator of this.elevators.values()) {
+            if (elevator.direction !== ElevatorDirection.Standing) {
+
+                // move the elevator
+                changedElevatorIds.add(elevator.id)
+
+                elevator.currentFloor += elevator.direction as number
+
+
+                // drop passengers that wants to be on this floor
+                for (let i = elevator.passengers.length - 1; i >= 0; i--) {
+                    const passenger = elevator.passengers[i]
+                    if (passenger.destinationFloor === elevator.currentFloor) {
+                        elevator.passengers.splice(i, 1)
+                        this.emit('passenger-dropped', { passenger, elevator })
+                    }
+                }
+
+                // if the elevator is at the limit floor this means it needs to change the direction
+                if (elevator.nextDirection !== ElevatorDirection.Standing
+                    && elevator.currentFloor === elevator.destinationLimit) {
+                    elevator.direction = elevator.nextDirection
+                    elevator.nextDirection = ElevatorDirection.Standing
+                    elevator.destinationLimit = Number.MAX_SAFE_INTEGER * elevator.direction
+
+                } else if (elevator.passengers.length === 0) {
+                    if (elevator.nextDirection !== ElevatorDirection.Standing) {
+                        // even thouh this elevator is empty it needs to go this way anyway
+                    } else {
+                        // looks like this elevator is empty now, check if there is any passenger in this way that wants to go this way
+                        let isSomeone = false
+                        const tmp = elevator.currentFloor * elevator.direction
+                        for (const passenger of this.waitingPassengers) {
+                            if (passenger.initialFloor * elevator.direction >= tmp
+                                && passenger.direction === elevator.direction
+                                && passenger.destinationFloor * elevator.direction <= elevator.destinationLimit * elevator.direction) {
+                                isSomeone = true
+                                break
+                            }
                         }
+                        if (!isSomeone) {
+                            //if not then switch direction to standing
+                            elevator.direction = ElevatorDirection.Standing
+                        }
+                    }
+                }
 
-                        // FIXME: it's possible that single elevator gets updated multiple times, but there should be a single event!
-                        this.emit('elevator-updated', elevator)
-                        foundOne = true
+                // take passengers that want to go this way and are on this floor and they are within the limit
+                for (let i = this.waitingPassengers.length - 1; i >= 0; i--) {
+                    const passenger = this.waitingPassengers[i]
+                    if (passenger.initialFloor === elevator.currentFloor
+                        && passenger.direction === elevator.direction
+                        && passenger.destinationFloor * elevator.direction < elevator.destinationLimit * elevator.direction) {
+                        elevator.passengers.push(passenger)
+                        this.waitingPassengers.splice(i, 1)
+                        this.emit('passenger-taken', { passenger, elevator })
+                    }
+                }
+            }
+        }
+
+
+
+
+        for (const elevator of this.elevators.values()) {
+            if (elevator.direction == ElevatorDirection.Standing) {
+                // find a direction to go to
+                for (const passenger of this.waitingPassengers) {
+                    // check if there is any elevator going to that persion, or will take it in the near future
+                    let isAny = false
+                    for (const otherElevator of this.elevators.values()) {
+
+                        if ((otherElevator.direction !== ElevatorDirection.Standing
+                            && passenger.initialFloor * otherElevator.direction > otherElevator.currentFloor * otherElevator.direction
+                            && passenger.destinationFloor * elevator.direction <= otherElevator.destinationLimit * otherElevator.direction
+                            && passenger.direction === otherElevator.direction)
+                            || (otherElevator.direction !== ElevatorDirection.Standing
+                                && otherElevator.nextDirection !== ElevatorDirection.Standing
+                                && passenger.initialFloor * otherElevator.direction <= otherElevator.destinationLimit * otherElevator.direction
+                                && passenger.direction === otherElevator.nextDirection)) {
+
+                            isAny = true
+                            break
+                        }
+                    }
+                    if (!isAny) {
+                        console.log(elevator.id, passenger.name);
+
+                        // if there are none, then make this elevator go for that person
+                        elevator.direction = Math.sign(passenger.initialFloor - elevator.currentFloor)
+                        elevator.nextDirection = Math.sign(passenger.destinationFloor - passenger.initialFloor)
+                        if (elevator.nextDirection === elevator.direction) {
+                            elevator.nextDirection = ElevatorDirection.Standing
+                            elevator.destinationLimit = Number.MAX_SAFE_INTEGER * elevator.direction
+                        } else {
+                            // it's good idea to find a person that is on lowest/heighest floor
+                            let limit = passenger.initialFloor
+                            this.waitingPassengers.forEach((elevator.direction === ElevatorDirection.GoingUp) ?
+                                (p) => { if (p.initialFloor > limit) limit = p.initialFloor } :
+                                (p) => { if (p.initialFloor < limit) limit = p.initialFloor })
+
+                            elevator.destinationLimit = limit
+                        }
+                        changedElevatorIds.add(elevator.id)
                         break
                     }
                 }
             }
-
-            if (!foundOne) {
-                // there is no elevator that is going in our direction, use one that is free
-                for (const elevator of this.elevators.values()) {
-                    // check if is free
-                    if (elevator.currentFloor === elevator.destinationFloor) {
-
-                        this.waitingPassengersAboutToBeTaken.push(passenger)
-                        this.waitingPassengers.splice(i, 1)
-
-                        elevator.destinationFloor = passenger.initialFloor
-                        // FIXME: it's possible that single elevator gets updated multiple times, but there should be a single event!
-                        this.emit('elevator-updated', elevator)
-
-                        break;
-                    }
-                }
-            }
         }
-
-
-        // moving elevators
-        for (const elevator of this.elevators.values()) {
-            let wasChanged = false
-
-            if (elevator.destinationFloor > elevator.currentFloor) {
-                // this elevator is going up
-                elevator.currentFloor++
-                wasChanged = true
-            } else if (elevator.destinationFloor < elevator.currentFloor) {
-                // this elevator is going down
-                elevator.currentFloor--
-                wasChanged = true
-            }
-
-
-            // drop passengers that wants to be on this floor
-            for (let i = elevator.passengers.length - 1; i >= 0; i--) {
-                const passenger = elevator.passengers[i]
-                if (passenger.destinationFloor === elevator.currentFloor) {
-                    elevator.passengers.splice(i, 1)
-                    this.emit('passenger-dropped', { passenger, elevator })
-                }
-            }
-
-            // take passengers that want to go up and are on this floor
-            // drop passengers that wants to be on this floor
-            for (let i = this.waitingPassengersAboutToBeTaken.length - 1; i >= 0; i--) {
-                const passenger = this.waitingPassengersAboutToBeTaken[i]
-                if (passenger.initialFloor === elevator.currentFloor) {
-                    elevator.passengers.push(passenger)
-                    this.waitingPassengersAboutToBeTaken.splice(i, 1)
-                    this.emit('passenger-taken', { passenger, elevator })
-                }
-            }
-
-
-            if (elevator.destinationFloor === elevator.currentFloor) {
-                // elevator is on the destination floor
-                // check if it has passengers
-                if (elevator.passengers.length !== 0) {
-                    // looks like it need to continue going the same direction
-                    elevator.destinationFloor = elevator.passengers[0].destinationFloor
-                    wasChanged = true
-                } else {
-                    // COMMENTED, because experimenting with different approach
-                    // FIXME: remove this
-
-                    // // looks like the elevator is empty, find any waiting passenger to go for //  meaby optimize it?
-                    // const floor = this.waitingPassengersAboutToBeTaken[0]?.initialFloor
-                    // if (floor !== undefined) {
-                    //     // there is at least one waiting passenger, go for it
-                    //     elevator.destinationFloor = floor
-                    //     wasChanged = true
-                    // }
-                }
-            }
-
-            if (wasChanged) {
-                this.emit('elevator-updated', elevator)
-            }
+        for (const id of changedElevatorIds) {
+            this.emit('elevator-updated', this.elevators.get(id))
         }
-
-
-
     }
 }

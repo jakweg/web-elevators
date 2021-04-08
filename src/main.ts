@@ -1,11 +1,21 @@
-import ElevatorSystem, { Elevator, Passenger, ElevatorAndPassenger } from "./elevator-system";
+import ElevatorSystem, { Elevator, Passenger, ElevatorAndPassenger, ElevatorDirection } from "./elevator-system";
 
 // show main box when JS is enabled
 document.querySelector('main').style.display = null;
 
 const system = new ElevatorSystem();
+// window.system = system
 const elevatorsListDiv = document.getElementById('elevators-list')
 const waitingPassengersListDiv = document.getElementById('waiting-passengers-list')
+
+const formatDirection = (dir: ElevatorDirection): string => {
+    switch (dir) {
+        case ElevatorDirection.GoingUp: return 'Going up'
+        case ElevatorDirection.GoingDown: return 'Going down'
+        case ElevatorDirection.Standing: return 'Standing still'
+    }
+}
+
 
 // DOM events:
 document.getElementById('add-elevator-btn').addEventListener('click', () => system.addNewElevator())
@@ -17,6 +27,8 @@ document.getElementById('add-passenger-btn').addEventListener('click', () => {
     })
 })
 document.getElementById('next-step-btn').addEventListener('click', () => system.commitNextStep())
+
+
 
 
 // system events
@@ -54,15 +66,41 @@ system.addEventListener('elevator-added', (elevator: Elevator) => {
 
     {
         const el = document.createElement('div')
-        el.classList.add('destination-floor-value')
-        el.innerText = `${elevator.destinationFloor}`
+        el.classList.add('direction-value')
+        el.innerText = `${formatDirection(elevator.direction)}`
         elevatorDiv.appendChild(el)
     }
     {
         const el = document.createElement('div')
-        el.innerText = `Destination floor`
+        el.innerText = `Direction`
         elevatorDiv.appendChild(el)
     }
+
+    // {
+    //     const el = document.createElement('div')
+    //     el.classList.add('limit-floor-value')
+    //     el.innerText = `${elevator.destinationLimit}`
+    //     elevatorDiv.appendChild(el)
+    // }
+    // {
+    //     const el = document.createElement('div')
+    //     el.innerText = `Floor limit`
+    //     elevatorDiv.appendChild(el)
+    // }
+
+    // {
+    //     const el = document.createElement('div')
+    //     el.classList.add('next-direction-value')
+    //     el.innerText = `${formatDirection(elevator.nextDirection)}`
+    //     elevatorDiv.appendChild(el)
+    // }
+    // {
+    //     const el = document.createElement('div')
+    //     el.innerText = `Next direction`
+    //     elevatorDiv.appendChild(el)
+    // }
+
+
     {
         const el = document.createElement('div')
         el.classList.add('passengers-inside-list')
@@ -75,7 +113,9 @@ system.addEventListener('elevator-added', (elevator: Elevator) => {
 system.addEventListener('elevator-updated', (elevator: Elevator) => {
     const elevatorDiv = document.getElementById(`elevator-id-${elevator.id}`);
     (elevatorDiv.querySelector('.current-floor-value') as HTMLDivElement).innerText = `${elevator.currentFloor}`;
-    (elevatorDiv.querySelector('.destination-floor-value') as HTMLDivElement).innerText = `${elevator.destinationFloor}`;
+    (elevatorDiv.querySelector('.direction-value') as HTMLDivElement).innerText = `${formatDirection(elevator.direction)}`;
+    // (elevatorDiv.querySelector('.limit-floor-value') as HTMLDivElement).innerText = `${elevator.destinationLimit}`;
+    // (elevatorDiv.querySelector('.next-direction-value') as HTMLDivElement).innerText = `${formatDirection(elevator.nextDirection)}`;
 })
 
 
@@ -138,12 +178,15 @@ system.addEventListener('passenger-dropped', ({ passenger, elevator }: ElevatorA
 })
 
 
-// system.addNewElevator()
+system.addNewElevator()
 system.addNewElevator()
 
 system.addNewPassenger({
-    name: 'Jakub', initialFloor: 2, destinationFloor: 5
+    name: 'Jakub', initialFloor: 2, destinationFloor: 4
 })
 system.addNewPassenger({
-    name: 'Piotr', initialFloor: 6, destinationFloor: 3
+    name: 'Paweł', initialFloor: 6, destinationFloor: 3
+})
+system.addNewPassenger({
+    name: 'Piotr', initialFloor: 7, destinationFloor: 3
 })
