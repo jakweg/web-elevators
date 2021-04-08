@@ -54,24 +54,6 @@ export default class ElevatorSystem extends EventProducer<EventType> {
         // moving elevators
         for (const elevator of this.elevators.values()) {
             let wasChanged = false
-            if (elevator.destinationFloor === elevator.currentFloor) {
-                // elevator is on the destination floor
-                // check if it has passengers
-                if (elevator.passengers.length !== 0) {
-                    // looks like it need to continue going the same direction
-                    elevator.destinationFloor = elevator.passengers[0].destinationFloor
-                    wasChanged = true
-                } else {
-                    // looks like the elevator is empty, find any waiting passenger to go for //  meaby optimize it?
-                    const floor = this.waitingPassengers[0]?.initialFloor
-                    if (floor !== undefined) {
-                        // there is at least one waiting passenger, go for it
-                        elevator.destinationFloor = floor
-                        wasChanged = true
-                    }
-                }
-            }
-
 
             if (elevator.destinationFloor > elevator.currentFloor) {
                 // this elevator is going up
@@ -103,6 +85,26 @@ export default class ElevatorSystem extends EventProducer<EventType> {
                     this.emit('passenger-taken', { passenger, elevator })
                 }
             }
+
+
+            if (elevator.destinationFloor === elevator.currentFloor) {
+                // elevator is on the destination floor
+                // check if it has passengers
+                if (elevator.passengers.length !== 0) {
+                    // looks like it need to continue going the same direction
+                    elevator.destinationFloor = elevator.passengers[0].destinationFloor
+                    wasChanged = true
+                } else {
+                    // looks like the elevator is empty, find any waiting passenger to go for //  meaby optimize it?
+                    const floor = this.waitingPassengers[0]?.initialFloor
+                    if (floor !== undefined) {
+                        // there is at least one waiting passenger, go for it
+                        elevator.destinationFloor = floor
+                        wasChanged = true
+                    }
+                }
+            }
+
             if (wasChanged) {
                 this.emit('elevator-updated', elevator)
             }
