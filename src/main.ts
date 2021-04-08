@@ -27,9 +27,10 @@ const formatDirection = (dir: ElevatorDirection): string => {
 };
 
 // DOM events:
-document
-  .getElementById("add-elevator-btn")
-  .addEventListener("click", () => system.addNewElevator());
+document.getElementById("add-elevator-btn").addEventListener("click", () => {
+  system.addNewElevator(+prompt("What floor is that elevator initially on?"));
+});
+
 document.getElementById("add-passenger-btn").addEventListener("click", () => {
   system.addNewPassenger({
     name: prompt("Give a passenger name", "") || "",
@@ -37,6 +38,7 @@ document.getElementById("add-passenger-btn").addEventListener("click", () => {
     destinationFloor: +prompt("That floor is that passenger going to go?"),
   });
 });
+
 document
   .getElementById("next-step-btn")
   .addEventListener("click", () => system.commitNextStep());
@@ -47,18 +49,18 @@ system.addEventListener("elevator-added", (elevator: Elevator) => {
   elevatorDiv.id = `elevator-id-${elevator.id}`;
   elevatorDiv.classList.add("elevator");
 
-  {
-    const el = document.createElement("div");
-    el.classList.add("elevator-id-value");
-    el.innerText = `${elevator.id}`;
-    elevatorDiv.appendChild(el);
-  }
-  {
-    const el = document.createElement("div");
-    el.classList.add("elevator-id-title");
-    el.innerText = `Elevator ID`;
-    elevatorDiv.appendChild(el);
-  }
+  //   {
+  //     const el = document.createElement("div");
+  //     el.classList.add("elevator-id-value");
+  //     el.innerText = `${elevator.id}`;
+  //     elevatorDiv.appendChild(el);
+  //   }
+  //   {
+  //     const el = document.createElement("div");
+  //     el.classList.add("elevator-id-title");
+  //     el.innerText = `Elevator ID`;
+  //     elevatorDiv.appendChild(el);
+  //   }
 
   {
     const el = document.createElement("div");
@@ -195,21 +197,21 @@ system.addEventListener(
   }
 );
 
-system.addNewElevator();
-system.addNewElevator();
+// system.addNewElevator();
+// system.addNewElevator();
 
-system.addNewPassenger({
-  name: "Jakub",
-  initialFloor: 2,
-  destinationFloor: 4,
-});
-system.addNewPassenger({
-  name: "Paweł",
-  initialFloor: 6,
-  destinationFloor: 3,
-});
-system.addNewPassenger({
-  name: "Piotr",
-  initialFloor: 7,
-  destinationFloor: 3,
-});
+// system.addNewPassenger({
+//   name: "Jakub",
+//   initialFloor: 2,
+//   destinationFloor: 4,
+// });
+// system.addNewPassenger({
+//   name: "Paweł",
+//   initialFloor: 6,
+//   destinationFloor: 3,
+// });
+// system.addNewPassenger({
+//   name: "Piotr",
+//   initialFloor: 7,
+//   destinationFloor: 3,
+// });
