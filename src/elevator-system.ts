@@ -29,7 +29,6 @@ export interface Passenger {
     readonly initialFloor: number
     readonly destinationFloor: number
     readonly direction: ElevatorDirection
-    readonly assignedElevatorId: number
 }
 
 export default class ElevatorSystem extends EventProducer<EventType, ElevatorSystemEvent> {
