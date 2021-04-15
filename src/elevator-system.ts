@@ -33,8 +33,7 @@ export interface Passenger {
 }
 
 export default class ElevatorSystem extends EventProducer<EventType> {
-    // id to Elevator
-    private elevators = new Map<number, Elevator>()
+    private elevators: Elevator[] = []
 
     private waitingPassengers: Passenger[] = []
 
@@ -42,7 +41,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
         const id = generateUniqueId()
         const obj = new Elevator(id)
         obj.currentFloor = +initialFloor || 0
-        this.elevators.set(id, obj)
+        this.elevators.push(obj)
         this.emit('elevator-added', obj)
     }
 
@@ -62,12 +61,12 @@ export default class ElevatorSystem extends EventProducer<EventType> {
     }
 
     public commitNextStep() {
-        const changedElevatorIds = new Set<number>()
+        const changedElevators = new Set<Elevator>()
 
         for (const elevator of this.elevators.values()) {
             if (elevator.direction !== ElevatorDirection.Standing) {
                 // move the elevator
-                changedElevatorIds.add(elevator.id)
+                changedElevators.add(elevator)
 
                 elevator.currentFloor += elevator.direction as number
 
@@ -182,14 +181,14 @@ export default class ElevatorSystem extends EventProducer<EventType> {
 
                             elevator.destinationLimit = limit
                         }
-                        changedElevatorIds.add(elevator.id)
+                        changedElevators.add(elevator)
                         break
                     }
                 }
             }
         }
-        for (const id of changedElevatorIds) {
-            this.emit('elevator-updated', this.elevators.get(id))
+        for (const elevator of changedElevators) {
+            this.emit('elevator-updated', elevator)
         }
     }
 }
