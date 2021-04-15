@@ -183,3 +183,7 @@ system.addEventListener('passenger-taken', ({ passenger, elevator }) => {
     el.innerText = `${passenger.name} (${passenger.destinationFloor})`
     listOfInsiders.appendChild(el)
 })
+
+system.addEventListener('passenger-dropped', ({ passenger }) => {
+    document.getElementById(`passenger_${passenger.id}`).remove()
+})
