@@ -25,6 +25,17 @@
             </nav>
 
             <div class="floating-layouts">
+                <section id="add-elevator-layout" class="gone">
+                    <h3>Adding elevator</h3>
+                    <label>
+                        <span>Initial floor:</span>
+                        <input type="number" id="initial-elevator-floor-input" placeholder="0" value="0" />
+                    </label>
+                    <p class="error gone" id="add-elevator-error"></p>
+                    <input type="button" value="Cancel" id="add-elevator-cancel-btn" />
+                    <input type="button" value="Add elevator" id="add-elevator-confirm-btn" />
+                </section>
+
                 <section id="add-passenger-layout" class="gone">
                     <h3>Adding passenger</h3>
                     <label>

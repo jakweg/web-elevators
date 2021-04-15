@@ -37,7 +37,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
 
     private waitingPassengers: Passenger[] = []
 
-    public addNewElevator(initialFloor?: number) {
+    public addNewElevator({ initialFloor }: { initialFloor?: number }) {
         const id = generateUniqueId()
         const obj = new Elevator(id)
         obj.currentFloor = +initialFloor || 0

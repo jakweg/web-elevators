@@ -77,7 +77,9 @@ input[type='button'] {
     font-size: 1.1em;
     transition: background-color 0.2s;
 }
-
+input[type='button']:focus {
+    background: #5b35b4;
+}
 input[type='button']:hover {
     background: #46209e;
 }
@@ -87,7 +89,8 @@ input[type='button']:hover {
     position: relative;
 }
 
-#add-passenger-layout {
+#add-passenger-layout,
+#add-elevator-layout {
     top: -6ch;
     text-align: center;
     position: absolute;
@@ -97,9 +100,10 @@ input[type='button']:hover {
     padding: 1ch;
     width: 40ch;
     transition: opacity 0.3s;
+    z-index: 10;
 }
 
-#add-passenger-layout > h3 {
+h3 {
     margin: 0 0 1ch 0;
 }
 

@@ -21,12 +21,38 @@ const formatDirection = (dir: ElevatorDirection): string => {
 
 // DOM events:
 document.getElementById('add-elevator-btn').addEventListener('click', () => {
-    system.addNewElevator(+prompt('What floor is that elevator initially on?'))
+    document.getElementById('add-elevator-error').classList.add('gone')
+    document.getElementById('add-elevator-layout').classList.remove('gone')
+    document.getElementById('add-passenger-layout').classList.add('gone')
+})
+document.getElementById('add-elevator-cancel-btn').addEventListener('click', () => {
+    document.getElementById('add-elevator-layout').classList.add('gone')
+})
+document.getElementById('add-elevator-confirm-btn').addEventListener('click', () => {
+    const initialFloor = (document.getElementById('initial-elevator-floor-input') as HTMLInputElement).value
+
+    let error: string
+    if (!initialFloor || isNaN(+initialFloor)) error = 'Invalid initial floor'
+
+    const errorElement = document.getElementById('add-elevator-error')
+    if (error) {
+        errorElement.classList.remove('gone')
+        errorElement.innerText = error
+    } else {
+        errorElement.innerText = ''
+        errorElement.classList.add('gone')
+        document.getElementById('add-elevator-layout').classList.add('gone')
+
+        system.addNewElevator({
+            initialFloor: +initialFloor,
+        })
+    }
 })
 
 document.getElementById('add-passenger-btn').addEventListener('click', () => {
     document.getElementById('add-passenger-error').classList.add('gone')
     document.getElementById('add-passenger-layout').classList.remove('gone')
+    document.getElementById('add-elevator-layout').classList.add('gone')
 })
 document.getElementById('add-passenger-cancel-btn').addEventListener('click', () => {
     document.getElementById('add-passenger-layout').classList.add('gone')
@@ -36,7 +62,7 @@ document.getElementById('add-passenger-confirm-btn').addEventListener('click', (
     const initialFloor = (document.getElementById('initial-floor-input') as HTMLInputElement).value
     const destinationFloor = (document.getElementById('destination-floor-input') as HTMLInputElement).value
 
-    let error
+    let error: string
     if (!name) error = 'Invalid passenger name'
     else if (!initialFloor || isNaN(+initialFloor)) error = 'Invalid initial floor'
     else if (!destinationFloor || isNaN(+destinationFloor)) error = 'Invalid destination floor'
