@@ -3,9 +3,9 @@ import { generateUniqueId } from './util'
 
 export type EventType = 'elevator-added' | 'waiting-passenger-added' | 'passenger-taken' | 'passenger-dropped' | 'elevator-updated'
 
-export interface ElevatorAndPassenger {
-    elevator: Elevator
-    passenger: Passenger
+export interface ElevatorSystemEvent {
+    elevator?: Elevator
+    passenger?: Passenger
 }
 
 export enum ElevatorDirection {
@@ -14,38 +14,43 @@ export enum ElevatorDirection {
     GoingDown = -1,
 }
 
-export class Elevator {
-    public constructor(public readonly id: number) {}
-    public currentFloor: number = 0
-    public direction: ElevatorDirection = ElevatorDirection.Standing
-    public nextDirection: ElevatorDirection = ElevatorDirection.Standing
-    public destinationLimit: number = Number.MAX_SAFE_INTEGER
-    public passengers: Passenger[] = []
+export interface Elevator {
+    readonly id: number
+    currentFloor: number
+    direction: ElevatorDirection
+    nextDirection: ElevatorDirection
+    destinationLimit: number
+    passengers: Passenger[]
 }
 
 export interface Passenger {
-    readonly id?: number
+    readonly id: number
     readonly name: string
     readonly initialFloor: number
     readonly destinationFloor: number
-    readonly direction?: ElevatorDirection
-    readonly assignedElevatorId?: number
+    readonly direction: ElevatorDirection
+    readonly assignedElevatorId: number
 }
 
-export default class ElevatorSystem extends EventProducer<EventType> {
+export default class ElevatorSystem extends EventProducer<EventType, ElevatorSystemEvent> {
     private elevators: Elevator[] = []
 
     private waitingPassengers: Passenger[] = []
 
     public addNewElevator({ initialFloor }: { initialFloor?: number }) {
-        const id = generateUniqueId()
-        const obj = new Elevator(id)
-        obj.currentFloor = +initialFloor || 0
-        this.elevators.push(obj)
-        this.emit('elevator-added', obj)
+        const elevator = {
+            id: generateUniqueId(),
+            direction: ElevatorDirection.Standing,
+            nextDirection: ElevatorDirection.Standing,
+            currentFloor: +initialFloor || 0,
+            destinationLimit: Number.MAX_SAFE_INTEGER,
+            passengers: [],
+        } as Elevator
+        this.elevators.push(elevator)
+        this.emit('elevator-added', { elevator })
     }
 
-    public addNewPassenger({ name, initialFloor, destinationFloor }: Passenger) {
+    public addNewPassenger({ name, initialFloor, destinationFloor }: { name: string; initialFloor: number; destinationFloor: number }) {
         if (isNaN(initialFloor) || isNaN(destinationFloor)) throw new Error('Invalid passengers parameters')
         if (initialFloor === destinationFloor) throw new Error('Passenger is already on the destination floor')
 
@@ -57,7 +62,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
             destinationFloor,
         }
         this.waitingPassengers.unshift(passenger)
-        this.emit('waiting-passenger-added', passenger)
+        this.emit('waiting-passenger-added', { passenger })
     }
 
     public commitNextStep() {
@@ -188,7 +193,7 @@ export default class ElevatorSystem extends EventProducer<EventType> {
             }
         }
         for (const elevator of changedElevators) {
-            this.emit('elevator-updated', elevator)
+            this.emit('elevator-updated', { elevator })
         }
     }
 }

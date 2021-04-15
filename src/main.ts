@@ -1,25 +1,13 @@
-import ElevatorSystem, { Elevator, Passenger, ElevatorAndPassenger, ElevatorDirection } from './elevator-system'
+import ElevatorSystem, { ElevatorDirection } from './elevator-system'
 
 // show main box when JS is enabled
 document.querySelector('main').style.display = null
 
 const system = new ElevatorSystem()
-// window.system = system
 const elevatorsListDiv = document.getElementById('elevators-list')
 const waitingPassengersListDiv = document.getElementById('waiting-passengers-list')
 
-const formatDirection = (dir: ElevatorDirection): string => {
-    switch (dir) {
-        case ElevatorDirection.GoingUp:
-            return 'up'
-        case ElevatorDirection.GoingDown:
-            return 'down'
-        case ElevatorDirection.Standing:
-            return 'none'
-    }
-}
-
-// DOM events:
+// Handle adding elevators:
 document.getElementById('add-elevator-btn').addEventListener('click', () => {
     document.getElementById('add-elevator-error').classList.add('gone')
     document.getElementById('add-elevator-layout').classList.remove('gone')
@@ -49,6 +37,7 @@ document.getElementById('add-elevator-confirm-btn').addEventListener('click', ()
     }
 })
 
+// handling adding passengers
 document.getElementById('add-passenger-btn').addEventListener('click', () => {
     document.getElementById('add-passenger-error').classList.add('gone')
     document.getElementById('add-passenger-layout').classList.remove('gone')
@@ -85,26 +74,25 @@ document.getElementById('add-passenger-confirm-btn').addEventListener('click', (
     }
 })
 
+// next step of simulation
 document.getElementById('next-step-btn').addEventListener('click', () => system.commitNextStep())
 
+const formatDirection = (dir: ElevatorDirection): string => {
+    switch (dir) {
+        case ElevatorDirection.GoingUp:
+            return 'up'
+        case ElevatorDirection.GoingDown:
+            return 'down'
+        case ElevatorDirection.Standing:
+            return 'none'
+    }
+}
+
 // system events
-system.addEventListener('elevator-added', (elevator: Elevator) => {
+system.addEventListener('elevator-added', ({ elevator }) => {
     const elevatorDiv = document.createElement('div')
     elevatorDiv.id = `elevator-id-${elevator.id}`
     elevatorDiv.classList.add('elevator')
-
-    //   {
-    //     const el = document.createElement("div");
-    //     el.classList.add("elevator-id-value");
-    //     el.innerText = `${elevator.id}`;
-    //     elevatorDiv.appendChild(el);
-    //   }
-    //   {
-    //     const el = document.createElement("div");
-    //     el.classList.add("elevator-id-title");
-    //     el.innerText = `Elevator ID`;
-    //     elevatorDiv.appendChild(el);
-    //   }
 
     {
         const el = document.createElement('div')
@@ -130,30 +118,6 @@ system.addEventListener('elevator-added', (elevator: Elevator) => {
         elevatorDiv.appendChild(el)
     }
 
-    // {
-    //     const el = document.createElement('div')
-    //     el.classList.add('limit-floor-value')
-    //     el.innerText = `${elevator.destinationLimit}`
-    //     elevatorDiv.appendChild(el)
-    // }
-    // {
-    //     const el = document.createElement('div')
-    //     el.innerText = `Floor limit`
-    //     elevatorDiv.appendChild(el)
-    // }
-
-    // {
-    //     const el = document.createElement('div')
-    //     el.classList.add('next-direction-value')
-    //     el.innerText = `${formatDirection(elevator.nextDirection)}`
-    //     elevatorDiv.appendChild(el)
-    // }
-    // {
-    //     const el = document.createElement('div')
-    //     el.innerText = `Next direction`
-    //     elevatorDiv.appendChild(el)
-    // }
-
     {
         const el = document.createElement('div')
         el.classList.add('passengers-inside-list')
@@ -163,15 +127,13 @@ system.addEventListener('elevator-added', (elevator: Elevator) => {
     elevatorsListDiv.appendChild(elevatorDiv)
 })
 
-system.addEventListener('elevator-updated', (elevator: Elevator) => {
+system.addEventListener('elevator-updated', ({ elevator }) => {
     const elevatorDiv = document.getElementById(`elevator-id-${elevator.id}`)
     ;(elevatorDiv.querySelector('.current-floor-value') as HTMLDivElement).innerText = `${elevator.currentFloor}`
     ;(elevatorDiv.querySelector('.direction-value') as HTMLDivElement).innerText = `${formatDirection(elevator.direction)}`
-    // (elevatorDiv.querySelector('.limit-floor-value') as HTMLDivElement).innerText = `${elevator.destinationLimit}`;
-    // (elevatorDiv.querySelector('.next-direction-value') as HTMLDivElement).innerText = `${formatDirection(elevator.nextDirection)}`;
 })
 
-system.addEventListener('waiting-passenger-added', (passenger: Passenger) => {
+system.addEventListener('waiting-passenger-added', ({ passenger }) => {
     const elevatorDiv = document.createElement('div')
     elevatorDiv.id = `waiting-passenger-id-${passenger.id}`
     elevatorDiv.classList.add('waiting-passenger')
@@ -183,7 +145,6 @@ system.addEventListener('waiting-passenger-added', (passenger: Passenger) => {
     }
     {
         const el = document.createElement('div')
-        el.innerText = `Name`
         elevatorDiv.appendChild(el)
     }
 
@@ -212,7 +173,7 @@ system.addEventListener('waiting-passenger-added', (passenger: Passenger) => {
     waitingPassengersListDiv.appendChild(elevatorDiv)
 })
 
-system.addEventListener('passenger-taken', ({ passenger, elevator }: ElevatorAndPassenger) => {
+system.addEventListener('passenger-taken', ({ passenger, elevator }) => {
     document.getElementById(`waiting-passenger-id-${passenger.id}`).remove()
     const listOfInsiders = document.querySelector(`#elevator-id-${elevator.id} .passengers-inside-list`)
 
@@ -222,31 +183,3 @@ system.addEventListener('passenger-taken', ({ passenger, elevator }: ElevatorAnd
     el.innerText = `${passenger.name} (${passenger.destinationFloor})`
     listOfInsiders.appendChild(el)
 })
-
-system.addEventListener('passenger-dropped', ({ passenger, elevator }: ElevatorAndPassenger) => {
-    document.querySelector(`#elevator-id-${elevator.id} #passenger_${passenger.id}`).remove()
-})
-// system.addNewElevator()
-// system.addNewPassenger({
-//     name: 'Jakub',
-//     initialFloor: 0,
-//     destinationFloor: 1,
-// })
-// system.addNewElevator();
-// system.addNewElevator();
-
-// system.addNewPassenger({
-//   name: "Jakub",
-//   initialFloor: 2,
-//   destinationFloor: 4,
-// });
-// system.addNewPassenger({
-//   name: "Paweł",
-//   initialFloor: 6,
-//   destinationFloor: 3,
-// });
-// system.addNewPassenger({
-//   name: "Piotr",
-//   initialFloor: 7,
-//   destinationFloor: 3,
-// });
