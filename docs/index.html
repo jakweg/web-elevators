@@ -23,6 +23,28 @@
                 <input type="button" value="Add passenger" id="add-passenger-btn" />
                 <input type="button" value="Next simulation step" id="next-step-btn" />
             </nav>
+
+            <div class="floating-layouts">
+                <section id="add-passenger-layout" class="gone">
+                    <h3>Adding passenger</h3>
+                    <label>
+                        <span>Passenger name:</span>
+                        <input type="text" id="passenger-name-input" placeholder="Jakub" value="Unnamed" />
+                    </label>
+                    <label>
+                        <span>Initial floor:</span>
+                        <input type="number" id="initial-floor-input" placeholder="0" value="0" />
+                    </label>
+                    <label>
+                        <span>Destination floor:</span>
+                        <input type="number" id="destination-floor-input" placeholder="10" value="0" />
+                    </label>
+                    <p class="error gone" id="add-passenger-error"></p>
+                    <input type="button" value="Cancel" id="add-passenger-cancel-btn" />
+                    <input type="button" value="Add passenger" id="add-passenger-confirm-btn" />
+                </section>
+            </div>
+
             <h4>Elevators:</h4>
             <div id="elevators-list"></div>
             <h4>Waiting passengers:</h4>

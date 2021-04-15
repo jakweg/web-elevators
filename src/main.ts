@@ -25,11 +25,38 @@ document.getElementById('add-elevator-btn').addEventListener('click', () => {
 })
 
 document.getElementById('add-passenger-btn').addEventListener('click', () => {
-    system.addNewPassenger({
-        name: prompt('Give a passenger name', '') || '',
-        initialFloor: +prompt('That floor is that passenger on?'),
-        destinationFloor: +prompt('That floor is that passenger going to go?'),
-    })
+    document.getElementById('add-passenger-error').classList.add('gone')
+    document.getElementById('add-passenger-layout').classList.remove('gone')
+})
+document.getElementById('add-passenger-cancel-btn').addEventListener('click', () => {
+    document.getElementById('add-passenger-layout').classList.add('gone')
+})
+document.getElementById('add-passenger-confirm-btn').addEventListener('click', () => {
+    const name = (document.getElementById('passenger-name-input') as HTMLInputElement).value
+    const initialFloor = (document.getElementById('initial-floor-input') as HTMLInputElement).value
+    const destinationFloor = (document.getElementById('destination-floor-input') as HTMLInputElement).value
+
+    let error
+    if (!name) error = 'Invalid passenger name'
+    else if (!initialFloor || isNaN(+initialFloor)) error = 'Invalid initial floor'
+    else if (!destinationFloor || isNaN(+destinationFloor)) error = 'Invalid destination floor'
+    else if (+destinationFloor === +initialFloor) error = 'Initial floor must be different then destination one'
+
+    const errorElement = document.getElementById('add-passenger-error')
+    if (error) {
+        errorElement.classList.remove('gone')
+        errorElement.innerText = error
+    } else {
+        errorElement.innerText = ''
+        errorElement.classList.add('gone')
+        document.getElementById('add-passenger-layout').classList.add('gone')
+
+        system.addNewPassenger({
+            destinationFloor: +destinationFloor,
+            initialFloor: +initialFloor,
+            name: name,
+        })
+    }
 })
 
 document.getElementById('next-step-btn').addEventListener('click', () => system.commitNextStep())
